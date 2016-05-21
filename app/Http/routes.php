@@ -14,6 +14,8 @@
 use App\Task;
 use App\TasksList;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
+
 
 Route::group(['middleware' => ['web']], function () {
     /**
@@ -34,7 +36,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/tasks/{list_id}', function ($list_id) {
 
         return view('tasks', [
-            'tasks' => Task::orderBy('created_at', 'asc')->get()->where('tasks_list_id', $list_id),
+            'tasks' => Task::where('tasks_list_id', $list_id)->paginate(10),
             'list_id' => $list_id
         ]);
     });
