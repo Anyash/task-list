@@ -21,6 +21,7 @@
                             <label for="task-name" class="col-sm-3 control-label">Task</label>
 
                             <div class="col-sm-6">
+                                <input type="hidden" name="tasks_list_id" class="form-control" value="{{ $list_id }}">
                                 <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}">
                             </div>
                         </div>

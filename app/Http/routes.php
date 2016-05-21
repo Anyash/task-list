@@ -12,6 +12,7 @@
 */
 
 use App\Task;
+use App\TasksList;
 use Illuminate\Http\Request;
 
 Route::group(['middleware' => ['web']], function () {
@@ -19,15 +20,52 @@ Route::group(['middleware' => ['web']], function () {
      * Show Task Dashboard
      */
     Route::get('/', function () {
-        return view('tasks', [
-            'tasks' => Task::orderBy('created_at', 'asc')->get()
+        return view('lists', [
+            'lists' => TasksList::orderBy('created_at', 'asc')->get(),
         ]);
     });
 
+    Route::get('/lists', function () {
+        return view('lists', [
+            'lists' => TasksList::orderBy('created_at', 'asc')->get()
+        ]);
+    });
+
+    Route::get('/tasks/{list_id}', function ($list_id) {
+
+        return view('tasks', [
+            'tasks' => Task::orderBy('created_at', 'asc')->get()->where('tasks_list_id', $list_id),
+            'list_id' => $list_id
+        ]);
+    });
     /**
      * Add New Task
      */
     Route::post('/task', function (Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|max:255',
+            'tasks_list_id' =>'required'
+        ]);
+//        var_dump($request->all());
+//        die;
+        if ($validator->fails()) {
+            return redirect('/tasks/'.$request->tasks_list_id)
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        $task = new Task;
+        $task->name = $request->name;
+        $task->tasks_list_id = $request->tasks_list_id;
+        $task->save();
+
+        return redirect('/tasks/'.$request->tasks_list_id);
+    });
+
+    /**
+     * Add New List
+     */
+    Route::post('/lists', function (Request $request) {
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
         ]);
@@ -38,11 +76,11 @@ Route::group(['middleware' => ['web']], function () {
                 ->withErrors($validator);
         }
 
-        $task = new Task;
-        $task->name = $request->name;
-        $task->save();
+        $list = new TasksList;
+        $list->name = $request->name;
+        $list->save();
 
-        return redirect('/');
+        return redirect('/lists');
     });
 
     /**
@@ -51,6 +89,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/task/{id}', function ($id) {
         Task::findOrFail($id)->delete();
 
-        return redirect('/');
+        return redirect('/tasks');
+    });
+
+    Route::delete('/lists/{id}', function ($id) {
+        TasksList::findOrFail($id)->delete();
+
+        return redirect('/lists');
     });
 });
