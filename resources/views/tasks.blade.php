@@ -44,24 +44,37 @@
                     <div class="panel-heading">
                         Current Tasks
                     </div>
-
                     <div class="panel-body">
+
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>Task</th>
-                                <th>&nbsp;</th>
+                                <th>
+                                    <form action="/tasks/{{ $tasks[0]->tasks_list_id }}" method="GET">
+                                        <input type="hidden" id="sort_name" name="sort_by_task_name" value="asc" />
+                                        <button type="submit" class="btn btn-default" >
+                                            <i class="fa fa-btn"></i>Task
+                                        </button>
+                                    </form>
+                                </th>
+                                <th>
+                                    <form action="/tasks/{{ $tasks[0]->tasks_list_id }}" method="GET">
+                                        <input type="hidden" name="sort_by_date" value="asc"/>
+                                        <button type="submit" class="btn btn-default">
+                                            <i class="fa fa-btn"></i>Created at
+                                        </button>
+                                    </form>
+                                </th>
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
                                     <tr>
                                         <td class="table-text"><div>{{ $task->name }}</div></td>
-
+                                        <td class="table-text"><div>{{ $task->created_at }}</div></td>
                                         <!-- Task Delete Button -->
                                         <td>
-                                            <form action="/task/{{ $task->id }}" method="POST">
+                                            <form action="/task/{{ $task->id }}/{{ $task->tasks_list_id }}" method="POST">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
-
                                                 <button type="submit" class="btn btn-danger">
                                                     <i class="fa fa-btn fa-trash"></i>Delete
                                                 </button>

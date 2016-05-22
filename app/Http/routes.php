@@ -15,7 +15,7 @@ use App\Task;
 use App\TasksList;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
-
+use Illuminate\Support\Facades\Input;
 
 Route::group(['middleware' => ['web']], function () {
     /**
@@ -34,11 +34,24 @@ Route::group(['middleware' => ['web']], function () {
     });
 
     Route::get('/tasks/{list_id}', function ($list_id) {
+        $sort_by_task_name_order=Input::get('sort_by_task_name');
+        $sort_by_date_order=Input::get('sort_by_date');
 
-        return view('tasks', [
-            'tasks' => Task::where('tasks_list_id', $list_id)->paginate(10),
-            'list_id' => $list_id
-        ]);
+        if ($sort_by_task_name_order!=NULL)
+                return view('tasks', [
+                    'tasks' => Task::orderBy('name', $sort_by_task_name_order)->where('tasks_list_id', $list_id)->paginate(10),
+                    'list_id' => $list_id,
+                ]);
+        elseif ($sort_by_date_order!=NULL)
+            return view('tasks', [
+                'tasks' => Task::orderBy('created_at', $sort_by_date_order)->where('tasks_list_id', $list_id)->paginate(10),
+                'list_id' => $list_id,
+            ]);
+        else
+            return view('tasks', [
+                'tasks' => Task::where('tasks_list_id', $list_id)->paginate(10),
+                'list_id' => $list_id,
+            ]);
     });
     /**
      * Add New Task
@@ -46,10 +59,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/task', function (Request $request) {
         $validator = Validator::make($request->all(), [
             'name' => 'required|max:255',
-            'tasks_list_id' =>'required'
+            'tasks_list_id' =>'required',
+
         ]);
-//        var_dump($request->all());
-//        die;
+
         if ($validator->fails()) {
             return redirect('/tasks/'.$request->tasks_list_id)
                 ->withInput()
@@ -88,12 +101,15 @@ Route::group(['middleware' => ['web']], function () {
     /**
      * Delete Task
      */
-    Route::delete('/task/{id}', function ($id) {
+    Route::delete('/task/{id}/{tasks_list_id}', function ($id, $tasks_list_id) {
         Task::findOrFail($id)->delete();
 
-        return redirect('/tasks');
+        return redirect('/tasks/'.$tasks_list_id);
     });
 
+    /**
+     * Delete List
+     */
     Route::delete('/lists/{id}', function ($id) {
         TasksList::findOrFail($id)->delete();
 
